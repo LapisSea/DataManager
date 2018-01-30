@@ -1,4 +1,6 @@
-package com.lapissea.datamanager;
+package com.lapissea.datamanager.domains;
+
+import com.lapissea.datamanager.Domain;
 
 import java.io.*;
 import java.util.ArrayList;

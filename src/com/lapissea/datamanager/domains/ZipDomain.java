@@ -1,5 +1,6 @@
-package com.lapissea.datamanager;
+package com.lapissea.datamanager.domains;
 
+import com.lapissea.datamanager.Domain;
 import com.lapissea.util.LogUtil;
 import com.lapissea.util.UtilL;
 import com.lapissea.util.filechange.FileChageDetector;
