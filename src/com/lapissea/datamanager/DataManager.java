@@ -1,5 +1,8 @@
 package com.lapissea.datamanager;
 
+import com.lapissea.datamanager.domains.DirectoryDomain;
+import com.lapissea.datamanager.domains.ZipDomain;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
