@@ -1,1 +1,3 @@
-DataManager
+___DataManager___
+
+A java utility that abstracts file fetching and exploring trough jars, folders, zips, urls, etc...
