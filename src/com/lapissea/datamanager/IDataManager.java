@@ -32,4 +32,6 @@ public interface IDataManager{
 	default IDataManager subData(String localPath){
 		return new SubDataManager(this, localPath);
 	}
+	
+	long getSize(String localPath);
 }

@@ -17,17 +17,17 @@ import java.util.stream.Stream;
 public class DataManager implements IDataManager{
 	
 	private final List<Function<File, Domain>> detectors=new ArrayList<>(List.of(
-			path->path.isDirectory()?new DirectoryDomain(path):null,
-			path->{
-				if(path.isFile()){
-					String extension=path.getName().substring(path.getName().lastIndexOf(".")+1);
-					
-					if(extension.equals("zip")||extension.equals("jar")){
-						return new ZipDomain(path);
-					}
+		path->path.isDirectory()?new DirectoryDomain(path):null,
+		path->{
+			if(path.isFile()){
+				String extension=path.getName().substring(path.getName().lastIndexOf(".")+1);
+				
+				if(extension.equals("zip")||extension.equals("jar")){
+					return new ZipDomain(path);
 				}
-				return null;
 			}
+			return null;
+		}
 	
 	                                                                            ));
 	
@@ -64,6 +64,17 @@ public class DataManager implements IDataManager{
 			}catch(Exception e){}
 		}
 		return null;
+	}
+	
+	@Override
+	public long getSize(String localPath){
+		for(Domain domain : domains){
+			try{
+				long t=domain.getSize(localPath);
+				if(t!=-1) return t;
+			}catch(Exception e){}
+		}
+		return -1;
 	}
 	
 	@Override
@@ -192,5 +203,4 @@ public class DataManager implements IDataManager{
 		}
 		return null;
 	}
-	
 }

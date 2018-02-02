@@ -190,6 +190,12 @@ public class ZipDomain extends Domain{
 	}
 	
 	@Override
+	public long getSize(String localPath){
+		ZippedFile cachedFile=get(localPath, false);
+		return cachedFile==null?-1:cachedFile.change.getSize();
+	}
+	
+	@Override
 	public BufferedInputStream getInStream(String localPath){
 		ZippedFile cachedFile=get(localPath, false);
 		return cachedFile==null?null:new BufferedInputStream(cachedFile.getIn());

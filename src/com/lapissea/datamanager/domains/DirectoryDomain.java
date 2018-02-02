@@ -63,4 +63,9 @@ public class DirectoryDomain extends Domain{
 		listf(new File(source, localPath), files);
 		return files.toArray(new String[files.size()]);
 	}
+	
+	@Override
+	public long getSize(String localPath){
+		return new File(source, localPath).length();
+	}
 }

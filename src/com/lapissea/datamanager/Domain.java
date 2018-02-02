@@ -1,6 +1,9 @@
 package com.lapissea.datamanager;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -109,4 +112,6 @@ public abstract class Domain{
 	public String toString(){
 		return getClass().getSimpleName()+"{source="+source.getPath()+"}";
 	}
+	
+	public abstract long getSize(String localPath);
 }

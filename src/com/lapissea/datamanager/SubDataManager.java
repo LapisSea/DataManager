@@ -81,4 +81,9 @@ public class SubDataManager implements IDataManager{
 	public IDataManager subData(String localPath){
 		return parent.subData(localToParent(localPath));
 	}
+	
+	@Override
+	public long getSize(String localPath){
+		return parent.getSize(localToParent(localPath));
+	}
 }
