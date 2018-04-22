@@ -1,43 +1,91 @@
 package com.lapissea.datamanager.domains;
 
 import com.lapissea.datamanager.Domain;
+import com.lapissea.util.NotNull;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.lapissea.util.UtilL.*;
+
 public class DirectoryDomain extends Domain{
 	
-	public DirectoryDomain(File source){
-		super(source);
+	
+	@NotNull
+	public final File source;
+	
+	public DirectoryDomain(@NotNull File source){
+		this.source=source;
+	}
+	
+	@NotNull
+	@Override
+	public String toString(){
+		return getClass().getSimpleName()+"{source="+source.getPath()+"}";
+	}
+	
+	private File local(@NotNull String local){
+		return new File(source, local);
+	}
+	
+	private Path path(String local){
+		return Paths.get(source.getPath(), local);
 	}
 	
 	@Override
-	public BufferedInputStream getInStream(String localPath){
+	public boolean equals(Object obj){
+		if(obj==this) return true;
+		if(!(obj instanceof DirectoryDomain)) return true;
+		DirectoryDomain other=(DirectoryDomain)obj;
+		
+		return this.source.equals(other.source);
+	}
+	
+	@Override
+	public byte[] getBytes(@NotNull String localPath){
 		try{
-			return new BufferedInputStream(new FileInputStream(new File(source, localPath)));
+			return Files.readAllBytes(Paths.get(source.getPath(), localPath));
+		}catch(IOException e){
+			return null;
+		}
+	}
+	
+	@Override
+	public BufferedInputStream getInStream(@NotNull String localPath){
+		try{
+			return new BufferedInputStream(new FileInputStream(local(localPath)));
 		}catch(FileNotFoundException e){
 			return null;
 		}
 	}
 	
 	@Override
-	public BufferedReader getReader(String localPath){
+	public BufferedReader getReader(@NotNull String localPath){
 		try{
-			return new BufferedReader(new FileReader(new File(source, localPath)));
+			return new BufferedReader(new FileReader(local(localPath)));
 		}catch(FileNotFoundException e){
 			return null;
 		}
 	}
 	
 	@Override
-	public String[] getDirNames(String localPath){
-		File f=new File(source, localPath);
+	public boolean exists(@NotNull String localPath){
+		return local(localPath).exists();
+	}
+	
+	@Override
+	public String[] getDirNames(@NotNull String localPath){
+		File f=local(localPath);
 		return f.list();
 	}
 	
 	@Override
-	public String[] getDirPaths(String localPath){
+	public String[] getDirPaths(@NotNull String localPath){
 		String[] names=getDirNames(localPath);
 		for(int i=0;i<names.length;i++){
 			names[i]=new File(source, localPath+File.separator+names[i]).getPath();
@@ -46,8 +94,10 @@ public class DirectoryDomain extends Domain{
 	}
 	
 	
-	private void listf(File dir, List<String> files){
+	private void listf(@NotNull File dir, @NotNull List<String> files){
 		File[] fList=dir.listFiles();
+		if(fList==null) return;
+		
 		for(File file : fList){
 			if(file.isFile()){
 				files.add(file.getPath());
@@ -58,14 +108,52 @@ public class DirectoryDomain extends Domain{
 	}
 	
 	@Override
-	public String[] getDirPathsDeep(String localPath){
+	public String[] getDirPathsDeep(@NotNull String localPath){
 		List<String> files=new ArrayList<>();
-		listf(new File(source, localPath), files);
+		listf(local(localPath), files);
 		return files.toArray(new String[files.size()]);
 	}
 	
 	@Override
-	public long getSize(String localPath){
-		return new File(source, localPath).length();
+	public long getSize(@NotNull String localPath){
+		return local(localPath).length();
+	}
+	
+	@NotNull
+	@Override
+	public String getSignature(){
+		return source.getPath();
+	}
+	
+	@Override
+	public boolean canEditCreate(@NotNull String localPath){
+		return local(localPath).getParentFile().isDirectory();
+	}
+	
+	@NotNull
+	@Override
+	public BufferedOutputStream makeFile(@NotNull String localPath){
+		File f=local(localPath);
+		try{
+			f.createNewFile();
+			return new BufferedOutputStream(new FileOutputStream(f));
+		}catch(IOException e){
+			throw uncheckedThrow(e);
+		}
+	}
+	
+	@Override
+	public void mkdirs(@NotNull String localPath){
+		local(localPath).mkdirs();
+	}
+	
+	@Override
+	public long getLastChange(@NotNull String localPath){
+		try{
+			BasicFileAttributes attr=Files.readAttributes(path(localPath), BasicFileAttributes.class);
+			return Math.max(attr.lastModifiedTime().toMillis(), attr.creationTime().toMillis());
+		}catch(IOException e){
+			return -1;
+		}
 	}
 }

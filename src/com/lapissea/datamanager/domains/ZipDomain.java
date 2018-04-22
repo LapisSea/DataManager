@@ -2,6 +2,8 @@ package com.lapissea.datamanager.domains;
 
 import com.lapissea.datamanager.Domain;
 import com.lapissea.util.LogUtil;
+import com.lapissea.util.NotNull;
+import com.lapissea.util.Nullable;
 import com.lapissea.util.UtilL;
 import com.lapissea.util.filechange.FileChageDetector;
 import com.lapissea.util.filechange.FileChangeInfo;
@@ -13,22 +15,29 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static com.lapissea.util.UtilL.*;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class ZipDomain extends Domain{
+	
+	public static final String[] EMPTY_STRING=new String[0];
 	
 	private class ZippedFile{
 		final Path             path;
 		final String           name;
 		final boolean          isFolder;
+		@NotNull
 		final File             cache;
+		@NotNull
 		final List<ZippedFile> children;
+		@Nullable
 		final FileChangeInfo   change;
 		
-		private ZippedFile(Path path, long size, long lastModifiedTime){
+		private ZippedFile(@NotNull Path path, long size, long lastModifiedTime){
 			this.path=path;
 			name=path.getName(path.getNameCount()-1).toString();
 			isFolder=size==-1;
@@ -46,11 +55,13 @@ public class ZipDomain extends Domain{
 			cache=new File(path.toString());
 		}
 		
+		@NotNull
 		@Override
 		public String toString(){
 			return (isFolder?"folder: ":"File:   ")+path+", size: "+change.getSize();
 		}
 		
+		@NotNull
 		public InputStream getIn(){
 			if(isFolder) throw new UnsupportedOperationException("Folders can not be read!");
 			
@@ -107,9 +118,27 @@ public class ZipDomain extends Domain{
 	private final ZippedFile root=new ZippedFile();
 	
 	
-	public ZipDomain(File source){
-		super(source);
-		new Thread(this::updateDatabase, source.getName()+" Update").start();
+	@NotNull
+	public final File source;
+	
+	public ZipDomain(@NotNull File source){
+		this.source=source;
+		CompletableFuture.runAsync(this::updateDatabase);
+	}
+	
+	@NotNull
+	@Override
+	public String toString(){
+		return getClass().getSimpleName()+"{source="+source.getPath()+"}";
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if(obj==this) return true;
+		if(!(obj instanceof DirectoryDomain)) return true;
+		DirectoryDomain other=(DirectoryDomain)obj;
+		
+		return this.source.equals(other.source);
 	}
 	
 	protected synchronized void updateDatabase(){
@@ -149,7 +178,7 @@ public class ZipDomain extends Domain{
 							else path=Paths.get(l.removeFirst(), l.toArray(new String[l.size()]));
 						}
 						
-						if(i+1==count) child=new ZippedFile(path, e.isDirectory()?-1:e.getSize(), e.getLastModifiedTime().toMillis());
+						if(i+1==count) child=new ZippedFile(path, e.isDirectory()?-1:e.getSize(), Math.max(e.getLastModifiedTime().toMillis(), e.getCreationTime().toMillis()));
 						else child=new ZippedFile(path, -1, -1);
 						last.children.add(child);
 					}
@@ -159,11 +188,11 @@ public class ZipDomain extends Domain{
 			});
 			LogUtil.println("Finished updating data table of "+source.getName());
 		}catch(IOException e){
-			uncheckedThrow(e);
+			throw uncheckedThrow(e);
 		}
 	}
 	
-	private synchronized ZippedFile get(String path, boolean folder){
+	private synchronized ZippedFile get(@NotNull String path, boolean folder){
 		ZippedFile last=root;
 		Path       p   =Paths.get(path).normalize();
 		
@@ -190,40 +219,58 @@ public class ZipDomain extends Domain{
 	}
 	
 	@Override
-	public long getSize(String localPath){
+	public long getSize(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, false);
 		return cachedFile==null?-1:cachedFile.change.getSize();
 	}
 	
 	@Override
-	public BufferedInputStream getInStream(String localPath){
+	public BufferedInputStream getInStream(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, false);
 		return cachedFile==null?null:new BufferedInputStream(cachedFile.getIn());
 	}
 	
 	@Override
-	public BufferedReader getReader(String localPath){
+	public BufferedReader getReader(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, false);
 		return cachedFile==null?null:new BufferedReader(new InputStreamReader(cachedFile.getIn()));
 	}
 	
 	@Override
-	public String[] getDirNames(String localPath){
+	public boolean exists(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, true);
-		if(cachedFile==null) return new String[0];
+		return cachedFile==null&&get(localPath, false)!=null;
+	}
+	
+	@Override
+	public byte[] getBytes(@NotNull String localPath){
+		try(BufferedInputStream in=getInStream(localPath)){
+			if(in==null) return null;
+			byte[] buffer=new byte[Math.toIntExact(getSize(localPath))];
+			in.read(buffer);
+			return buffer;
+		}catch(IOException e){
+			return null;
+		}
+	}
+	
+	@Override
+	public String[] getDirNames(@NotNull String localPath){
+		ZippedFile cachedFile=get(localPath, true);
+		if(cachedFile==null) return EMPTY_STRING;
 		
 		return cachedFile.children.stream().map(f->f.name).toArray(String[]::new);
 	}
 	
 	@Override
-	public String[] getDirPaths(String localPath){
+	public String[] getDirPaths(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, true);
-		if(cachedFile==null) return new String[0];
+		if(cachedFile==null) return EMPTY_STRING;
 		
 		return cachedFile.children.stream().map(f->f.path.toString()).toArray(String[]::new);
 	}
 	
-	private void listAllEntries(String dir, List<ZippedFile> files){
+	private void listAllEntries(@NotNull String dir, @NotNull List<ZippedFile> files){
 		ZippedFile cachedFile=get(dir, true);
 		if(cachedFile==null) return;
 		for(ZippedFile child : cachedFile.children){
@@ -233,9 +280,22 @@ public class ZipDomain extends Domain{
 	}
 	
 	@Override
-	public String[] getDirPathsDeep(String localPath){
+	public String[] getDirPathsDeep(@NotNull String localPath){
 		List<ZippedFile> files=new ArrayList<>();
 		listAllEntries(localPath, files);
 		return files.stream().map(e->e.path.toString()).toArray(String[]::new);
 	}
+	
+	@NotNull
+	@Override
+	public String getSignature(){
+		return "JAR:"+source.toString();
+	}
+	
+	@Override
+	public long getLastChange(@NotNull String localPath){
+		ZippedFile cachedFile=get(localPath, false);
+		return cachedFile==null?-1:cachedFile.change.getChangeTime();
+	}
+	
 }

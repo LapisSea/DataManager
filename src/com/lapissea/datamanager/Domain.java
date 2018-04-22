@@ -1,11 +1,12 @@
 package com.lapissea.datamanager;
 
+import com.lapissea.util.NotNull;
+import com.lapissea.util.Nullable;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,44 +16,41 @@ import java.util.stream.Stream;
 
 public abstract class Domain{
 	
-	public final File source;
+	@Nullable
+	public abstract BufferedInputStream getInStream(@NotNull String localPath);
 	
-	public Domain(File source){
-		this.source=source;
-	}
+	@Nullable
+	public abstract BufferedReader getReader(@NotNull String localPath);
 	
-	public abstract BufferedInputStream getInStream(String localPath);
+	public abstract boolean exists(@NotNull String localPath);
 	
-	public abstract BufferedReader getReader(String localPath);
+	@Nullable
+	public abstract byte[] getBytes(@NotNull String localPath);
 	
-	public byte[] getBytes(String localPath){
-		try{
-			return Files.readAllBytes(Paths.get(source.getPath(), localPath));
-		}catch(IOException e){
-			return null;
-		}
-	}
-	
-	public char[] getChars(String localPath){
+	@SuppressWarnings("ResultOfMethodCallIgnored")
+	@Nullable
+	public char[] getChars(@NotNull String localPath){
 		try(BufferedReader r=getReader(localPath)){
 			if(r==null) return null;
-			char[]        charArray=new char[128];
-			StringBuilder result   =new StringBuilder();
-			for(int rest;(rest=r.read(charArray))!=-1;){
-				result.append(charArray, 0, rest);
-			}
-			if(result.length()!=charArray.length) charArray=new char[result.length()];
-			result.getChars(0, result.length(), null, 0);
+			long size=getSize(localPath);
+			if(size>Integer.MAX_VALUE) throw new IOException("Trying to read extremely large file");
+			
+			char[] charArray=new char[(int)size];
+			r.read(charArray);
 			return charArray;
 		}catch(IOException e){}
 		return null;
 	}
 	
-	public String getAll(String localPath){
-		return new String(getChars(localPath));
+	@Nullable
+	public String getAll(@NotNull String localPath){
+		char[] ch=getChars(localPath);
+		if(ch==null) return null;
+		return new String(ch);
 	}
 	
-	public List<String> getLines(String localPath){
+	@Nullable
+	public List<String> getLines(@NotNull String localPath){
 		try(BufferedReader r=getReader(localPath)){
 			if(r==null) return null;
 			BufferedReader    b=new BufferedReader(r);
@@ -65,7 +63,7 @@ public abstract class Domain{
 		return null;
 	}
 	
-	public boolean getLines(String localPath, Consumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
 		try(BufferedReader r=getReader(localPath)){
 			if(r==null) return false;
 			BufferedReader b=new BufferedReader(r);
@@ -77,7 +75,7 @@ public abstract class Domain{
 		return false;
 	}
 	
-	public boolean getLines(String localPath, ObjIntConsumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
 		try(BufferedReader r=getReader(localPath)){
 			if(r==null) return false;
 			BufferedReader b=new BufferedReader(r);
@@ -90,28 +88,54 @@ public abstract class Domain{
 		return false;
 	}
 	
-	public abstract String[] getDirNames(String localPath);
+	@Nullable
+	public abstract String[] getDirNames(@NotNull String localPath);
 	
-	public abstract String[] getDirPaths(String localPath);
+	@Nullable
+	public abstract String[] getDirPaths(@NotNull String localPath);
 	
-	public abstract String[] getDirPathsDeep(String localPath);
+	@Nullable
+	public abstract String[] getDirPathsDeep(@NotNull String localPath);
 	
-	public Stream<String> getDirNamesS(String localPath){
-		return Arrays.stream(getDirNames(localPath));
+	@Nullable
+	public Stream<String> getDirNamesS(@NotNull String localPath){
+		String[] r=getDirNames(localPath);
+		if(r==null) return null;
+		return Arrays.stream(r);
 	}
 	
-	public Stream<String> getDirPathsS(String localPath){
-		return Arrays.stream(getDirPaths(localPath));
+	@Nullable
+	public Stream<String> getDirPathsS(@NotNull String localPath){
+		String[] r=getDirPaths(localPath);
+		if(r==null) return null;
+		return Arrays.stream(r);
 	}
 	
-	public Stream<String> getDirPathsDeepS(String localPath){
-		return Arrays.stream(getDirPathsDeep(localPath));
+	@Nullable
+	public Stream<String> getDirPathsDeepS(@NotNull String localPath){
+		String[] r=getDirPathsDeep(localPath);
+		if(r==null) return null;
+		return Arrays.stream(r);
 	}
 	
-	@Override
-	public String toString(){
-		return getClass().getSimpleName()+"{source="+source.getPath()+"}";
+	
+	public abstract long getSize(@NotNull String localPath);
+	
+	@NotNull
+	public abstract String getSignature();
+	
+	public boolean canEditCreate(@NotNull String localPath){
+		return false;
 	}
 	
-	public abstract long getSize(String localPath);
+	@NotNull
+	public BufferedOutputStream makeFile(@NotNull String localPath){
+		throw new UnsupportedOperationException();
+	}
+	
+	public void mkdirs(@NotNull String localPath){
+		throw new UnsupportedOperationException();
+	}
+	
+	public abstract long getLastChange(@NotNull String localPath);
 }
