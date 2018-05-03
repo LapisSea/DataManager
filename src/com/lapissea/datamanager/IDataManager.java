@@ -23,17 +23,17 @@ import static com.lapissea.util.UtilL.*;
  * <h2>Concepts</h2>
  * <b>domain</b>
  * <p>
- * A path and all its contents handled by an implementation of {@link Domain}.<br/>
+ * A path and all its contents handled by an implementation of {@link Domain}.<br>
  * Can be interchangeable with a folder or compressed file, depending on context.
  * </p>
  * <b>local path</b>
  * <p>
- * Path that represents the end portion of any domain. <br /><br />
- * EG:<br />
- * registered domain = <code>resources/gamedata.zip</code><br/>
- * localPath = <code>textures/sky.hdr</code><br/>
- * <br/>
- * AKA: <code>./resources/gamedata.zip/textures/sky.hdr</code> in an example format<br/>
+ * Path that represents the end portion of any domain. <br><br>
+ * EG:<br>
+ * registered domain = <code>resources/gamedata.zip</code><br>
+ * localPath = <code>textures/sky.hdr</code><br>
+ * <br>
+ * AKA: <code>./resources/gamedata.zip/textures/sky.hdr</code> in an example format<br>
  * Opens gamedata zip and in it searches for textures/sky.hdr
  * </p>
  */
@@ -50,8 +50,8 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get a raw {@link InputStream} of some resource provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
-	 * @return {@link BufferedInputStream} that is a wrapper of specific {@link Domain} implementation.<br/>
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
+	 * @return {@link BufferedInputStream} that is a wrapper of specific {@link Domain} implementation.<br>
 	 * <ul>
 	 * <li>System file: {@link java.io.FileInputStream}</li>
 	 * <li>File inside compressed folder: {@link java.util.jar.JarInputStream} (without caching)</li>
@@ -65,7 +65,7 @@ public interface IDataManager{
 	 * Runs {@link #getInStream(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param onRead    Callback to process {@link BufferedInputStream} and return a "parsed" result
 	 * @param <Out>     resulting output type defined by {@code onRead}
 	 * @return {@link CompletableFuture} that will return object provided by {@code onRead}
@@ -85,9 +85,9 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get a raw {@link Reader} of some resource provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
-	 * @return {@link java.io.BufferedReader} that is a wrapper of specific {@link Domain} implementation.<br/>
-	 * <ul>f
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
+	 * @return {@link java.io.BufferedReader} that is a wrapper of specific {@link Domain} implementation.<br>
+	 * <ul>
 	 * <li>System file: {@link java.io.FileReader}</li>
 	 * <li>File inside compressed folder: {@link java.io.InputStreamReader}</li>
 	 * <li>...</li>
@@ -100,7 +100,7 @@ public interface IDataManager{
 	 * <p>Runs {@link #getReader(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param onRead    Callback to process {@link BufferedReader} and return a "parsed" result
 	 * @param <Out>     resulting output type defined by {@code onRead}
 	 * @return {@link CompletableFuture} that will return object provided by {@code onRead}
@@ -120,7 +120,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all bytes of some resource provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@code byte[]} with contents of the resource
 	 */
 	@Nullable
@@ -130,7 +130,7 @@ public interface IDataManager{
 	 * <p>Runs {@link #readAllBytes(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link CompletableFuture} that will return {@code byte[]} with contents of the resource
 	 * @see #readAllBytes(String)
 	 */
@@ -142,7 +142,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all characters of some resource provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@code char[]} with contents of the resource
 	 */
 	@Nullable
@@ -152,7 +152,7 @@ public interface IDataManager{
 	 * <p>Runs {@link #readAllChars(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link CompletableFuture} that will return {@code char[]} with contents of the resource
 	 * @see #readAllChars(String)
 	 */
@@ -164,7 +164,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all contents of some resource in a string provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link String} with contents of the resource
 	 */
 	@Nullable
@@ -174,7 +174,7 @@ public interface IDataManager{
 	 * <p>Runs {@link #readAll(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link CompletableFuture} that will return {@link String} with contents of the resource
 	 * @see #readAll(String)
 	 */
@@ -186,7 +186,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all lines of a text based resource provided by registered {@link Domain}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link List} with all lines of the resource
 	 */
 	@Nullable
@@ -196,7 +196,7 @@ public interface IDataManager{
 	 * <p>Runs {@link #getLines(String)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link CompletableFuture} that will return {@link List} with all lines of the resource
 	 * @see #readAll(String)
 	 */
@@ -208,7 +208,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all lines of a text based resource provided in a callback fashion by registered {@link Domain}.</p>
 	 *
-	 * @param localPath    see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath    see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param lineConsumer {@link Consumer} that will be given individual line by line of a resource provided by registered {@link Domain}.
 	 * @return this object (for chaining)
 	 */
@@ -218,7 +218,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all lines of a text with its index (line number) based resource provided in a callback fashion by registered {@link Domain}.</p>
 	 *
-	 * @param localPath    see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath    see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param lineConsumer {@link Consumer} that will be given individual line by line of a resource provided by registered {@link Domain}.
 	 * @return this object (for chaining)
 	 */
@@ -228,7 +228,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all names of files/directories in a directory defined by {@code localPath}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@code String[]} containing all names
 	 */
 	@Nullable
@@ -237,7 +237,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all names of files/directories in a directory defined by {@code localPath}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link Stream} of all names
 	 */
 	@Nullable
@@ -246,27 +246,27 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to check if a resource exists at {@code localPath}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return flag representing if resource was found
 	 */
 	boolean exists(@NotNull String localPath);
 	
 	/**
-	 * <p>Function that creates a view of current {@link IDataManager} with localPath<br/><br/>
-	 * EG:<br/>
-	 * Domain contains:<br/>
+	 * <p>Function that creates a view of current {@link IDataManager} with localPath<br><br>
+	 * EG:<br>
+	 * Domain contains:<br>
 	 * <code>
-	 * textures/sky.hdr<br/>
-	 * textures/...<br/>
+	 * textures/sky.hdr<br>
+	 * textures/...<br>
 	 * ...
-	 * </code><br/>
-	 * <br/>
-	 * So a to localize textures something like this would be done:<br/>
+	 * </code><br>
+	 * <br>
+	 * So a to localize textures something like this would be done:<br>
 	 * <code>
-	 * {@link IDataManager} assets=...;<br/>
+	 * {@link IDataManager} assets=...;<br>
 	 * {@link IDataManager} tx=assets.subData("textures");
-	 * </code><br/><br/>
-	 * And to get something from it would be done like:<br/>
+	 * </code><br><br>
+	 * And to get something from it would be done like:<br>
 	 * <code>{@link InputStream} skyStream=tx.getInStream("sky.hdr");</code>
 	 * </p>
 	 *
@@ -279,7 +279,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get size of a readable resource in bytes. If it is not readable (directory/missing) then this will return -1.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return size of resource in bytes
 	 */
 	long getSize(@NotNull String localPath);
@@ -290,7 +290,7 @@ public interface IDataManager{
 	 * Instead of passing in the {@link ByteBuffer} this function requests a ByteBuffer with a speified size- (resource byte size)
 	 * </p>
 	 *
-	 * @param localPath     see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath     see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param newByteBuffer Function to create/supply a {@link ByteBuffer} where to write bytes
 	 * @return {@link ByteBuffer} that was given in {@code byteBuffer}.
 	 */
@@ -307,7 +307,7 @@ public interface IDataManager{
 	 * Runs {@link #readAllBytes(String, IntFunction)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.
 	 *
-	 * @param localPath     see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath     see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param newByteBuffer Function to create/supply a {@link ByteBuffer}
 	 * @return {@link CompletableFuture} that will return object provided by {@code onRead}
 	 * @see #getInStream(String)
@@ -320,7 +320,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all bytes of some resource provided by registered {@link Domain} and put them in to a {@link ByteBuffer}.</p>
 	 *
-	 * @param localPath  see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath  see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param byteBuffer destination where to write bytes
 	 * @return {@link ByteBuffer} that was given in {@code byteBuffer}.
 	 */
@@ -341,7 +341,7 @@ public interface IDataManager{
 	 * Runs {@link #readAllBytes(String, ByteBuffer)} in a {@link CompletableFuture} where if result fails (aka is null),
 	 * throws exception so it cen be handled properly with functions like {@link CompletableFuture#exceptionally}.
 	 *
-	 * @param localPath  see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath  see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param byteBuffer destination og where to store bytes in
 	 * @return {@link CompletableFuture} that will return object provided by {@code onRead}
 	 * @see #getInStream(String)
@@ -354,7 +354,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all text of some resource provided by registered {@link Domain} and put it in a {@link StringBuilder}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param dest      String builder where to put all the contents in to.
 	 * @return returns {@link StringBuilder} that was given in {@code dest}.
 	 */
@@ -374,7 +374,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all paths of files/directories in a directory defined by {@code localPath}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@code String[]} containing all paths
 	 */
 	@Nullable
@@ -383,7 +383,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all paths of files/directories in a directory and all its child directories defined by {@code localPath}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@code String[]} containing all paths
 	 */
 	@Nullable
@@ -392,7 +392,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all paths of files/directories in a directory defined by {@code localPath} and returned in a stream.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link Stream} containing all paths
 	 */
 	@Nullable
@@ -401,7 +401,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get all paths of files/directories in a directory and all its child directories defined by {@code localPath} and returned in a stream.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return {@link Stream} containing all paths
 	 */
 	@Nullable
@@ -410,7 +410,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to check if any {@link Domain} is editable and can create new files/folders. (usually a domain that handles a compressed file will not be editable)</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return Flag that represents if it is possible to edit/create resources
 	 */
 	boolean canEditCreate(@NotNull String localPath);
@@ -418,7 +418,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to create/modify a resource. If a resource is missing, it will be automatically created. When resource is created its contents will be set to {@code data} </p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param data      content that will be written to resource
 	 */
 	void makeFile(@NotNull String localPath, byte[] data);
@@ -426,8 +426,8 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to create/modify a resource. If a resource is missing, it will be automatically created.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
-	 * @return {@link BufferedOutputStream} that is a wrapper of specific {@link Domain} implementation.<br/>
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
+	 * @return {@link BufferedOutputStream} that is a wrapper of specific {@link Domain} implementation.<br>
 	 */
 	@NotNull
 	BufferedOutputStream makeFile(@NotNull String localPath);
@@ -435,7 +435,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to create a {@link DataSignature}.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return new instance of {@link DataSignature}
 	 */
 	@NotNull
@@ -444,7 +444,7 @@ public interface IDataManager{
 	/**
 	 * <p>Function used to get the time in ms when a resource was last changed. Useful when working with editable domains. If it is not possible to get time, -1 will be returned.</p>
 	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @return date of last modification or creation if it was never modified in ms or -1 in a case of failure
 	 */
 	long getLastChange(@NotNull String localPath);

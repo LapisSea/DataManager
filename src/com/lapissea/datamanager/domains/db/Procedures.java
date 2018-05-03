@@ -16,7 +16,7 @@ public final class Procedures{
 		return s.executeQuery();
 	}
 	
-	/**
+	/*
 	 * ID, PATH, FILESIZE, LASTMODIFIED
 	 */
 	public static ResultSet getFileMeta(Connection con, String path, String what) throws SQLException{
