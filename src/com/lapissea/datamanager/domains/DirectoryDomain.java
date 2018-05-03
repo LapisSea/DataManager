@@ -31,11 +31,11 @@ public class DirectoryDomain extends Domain{
 	}
 	
 	private File local(@NotNull String local){
-		return new File(source, local);
+		return new File(source, local.isEmpty()?".":local);
 	}
 	
 	private Path path(String local){
-		return Paths.get(source.getPath(), local);
+		return Paths.get(source.getPath(), local.isEmpty()?".":local);
 	}
 	
 	@Override
@@ -50,7 +50,7 @@ public class DirectoryDomain extends Domain{
 	@Override
 	public byte[] getBytes(@NotNull String localPath){
 		try{
-			return Files.readAllBytes(Paths.get(source.getPath(), localPath));
+			return Files.readAllBytes(path(localPath));
 		}catch(IOException e){
 			return null;
 		}
@@ -91,7 +91,7 @@ public class DirectoryDomain extends Domain{
 		if(names==null) return null;
 		
 		for(int i=0;i<names.length;i++){
-			names[i]=new File(source, localPath+File.separator+names[i]).getPath();
+			names[i]=localPath+File.separator+names[i];
 		}
 		return names;
 	}
@@ -130,7 +130,7 @@ public class DirectoryDomain extends Domain{
 	
 	@Override
 	public boolean canEditCreate(@NotNull String localPath){
-		return local(localPath).getParentFile().isDirectory();
+		return true;
 	}
 	
 	@NotNull
