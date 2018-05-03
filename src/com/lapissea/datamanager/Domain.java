@@ -43,7 +43,7 @@ public abstract class Domain{
 	}
 	
 	@Nullable
-	public String getAll(@NotNull String localPath){
+	public String readAll(@NotNull String localPath){
 		char[] ch=getChars(localPath);
 		if(ch==null) return null;
 		return new String(ch);
@@ -133,7 +133,7 @@ public abstract class Domain{
 		throw new UnsupportedOperationException();
 	}
 	
-	public void mkdirs(@NotNull String localPath){
+	public void makeFile(@NotNull String localPath, byte[] data){
 		throw new UnsupportedOperationException();
 	}
 	

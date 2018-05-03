@@ -145,8 +145,8 @@ public class SubDataManager implements IDataManager{
 	}
 	
 	@Override
-	public boolean mkdirs(@NotNull String localPath){
-		return parent.mkdirs(localToParent(localPath));
+	public void makeFile(@NotNull String localPath, byte[] data){
+		parent.makeFile(localToParent(localPath), data);
 	}
 	
 	@NotNull

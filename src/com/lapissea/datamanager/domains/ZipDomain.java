@@ -1,12 +1,12 @@
 package com.lapissea.datamanager.domains;
 
 import com.lapissea.datamanager.Domain;
+import com.lapissea.filechange.FileChageDetector;
+import com.lapissea.filechange.FileChangeInfo;
 import com.lapissea.util.LogUtil;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 import com.lapissea.util.UtilL;
-import com.lapissea.util.filechange.FileChageDetector;
-import com.lapissea.util.filechange.FileChangeInfo;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -27,12 +26,13 @@ public class ZipDomain extends Domain{
 	public static final String[] EMPTY_STRING=new String[0];
 	
 	private class ZippedFile{
+		@NotNull
 		final Path             path;
+		@NotNull
 		final String           name;
 		final boolean          isFolder;
 		@NotNull
 		final File             cache;
-		@NotNull
 		final List<ZippedFile> children;
 		@Nullable
 		final FileChangeInfo   change;
@@ -121,9 +121,9 @@ public class ZipDomain extends Domain{
 	@NotNull
 	public final File source;
 	
-	public ZipDomain(@NotNull File source){
-		this.source=source;
-		CompletableFuture.runAsync(this::updateDatabase);
+	public ZipDomain(@NotNull String source){
+		this.source=new File(source);
+		async(this::updateDatabase);
 	}
 	
 	@NotNull

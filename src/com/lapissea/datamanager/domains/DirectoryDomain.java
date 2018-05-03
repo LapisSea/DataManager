@@ -13,14 +13,15 @@ import java.util.List;
 
 import static com.lapissea.util.UtilL.*;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class DirectoryDomain extends Domain{
 	
 	
 	@NotNull
 	public final File source;
 	
-	public DirectoryDomain(@NotNull File source){
-		this.source=source;
+	public DirectoryDomain(@NotNull String source){
+		this.source=new File(source);
 	}
 	
 	@NotNull
@@ -87,6 +88,8 @@ public class DirectoryDomain extends Domain{
 	@Override
 	public String[] getDirPaths(@NotNull String localPath){
 		String[] names=getDirNames(localPath);
+		if(names==null) return null;
+		
 		for(int i=0;i<names.length;i++){
 			names[i]=new File(source, localPath+File.separator+names[i]).getPath();
 		}
@@ -134,6 +137,7 @@ public class DirectoryDomain extends Domain{
 	@Override
 	public BufferedOutputStream makeFile(@NotNull String localPath){
 		File f=local(localPath);
+		f.getParentFile().mkdirs();
 		try{
 			f.createNewFile();
 			return new BufferedOutputStream(new FileOutputStream(f));
@@ -143,8 +147,13 @@ public class DirectoryDomain extends Domain{
 	}
 	
 	@Override
-	public void mkdirs(@NotNull String localPath){
-		local(localPath).mkdirs();
+	public void makeFile(@NotNull String localPath, byte[] data){
+		try(OutputStream os=makeFile(localPath)){
+			os.write(data);
+			os.flush();
+		}catch(IOException e){
+			throw uncheckedThrow(e);
+		}
 	}
 	
 	@Override

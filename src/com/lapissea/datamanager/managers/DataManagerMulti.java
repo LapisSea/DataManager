@@ -2,67 +2,36 @@ package com.lapissea.datamanager.managers;
 
 import com.lapissea.datamanager.DataSignature;
 import com.lapissea.datamanager.Domain;
+import com.lapissea.datamanager.DomainRegistry;
 import com.lapissea.datamanager.IDataManager;
-import com.lapissea.datamanager.domains.DirectoryDomain;
-import com.lapissea.datamanager.domains.ZipDomain;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.stream.Stream;
 
-import static com.lapissea.util.UtilL.*;
-
-public class DataManager implements IDataManager{
-	
-	private static List<Function<File, Domain>> DETECTORS;// pitaj na faxu
-	
-	private static List<Function<File, Domain>> getDetectors(){
-		if(DETECTORS==null){
-			DETECTORS=new ArrayList<>(2);
-			DETECTORS.add(path->path.isDirectory()?new DirectoryDomain(path):null);
-			DETECTORS.add(path->{
-				if(path.isFile()){
-					String extension=path.getName().substring(path.getName().lastIndexOf(".")+1);
-					
-					if(extension.equals("gz")||extension.equals("zip")||extension.equals("jar")){
-						return new ZipDomain(path);
-					}
-				}
-				return null;
-			});
-		}
-		return DETECTORS;
-	}
+@SuppressWarnings("CatchMayIgnoreException")
+public class DataManagerMulti implements IDataManager{
 	
 	private final List<Domain> domains=new ArrayList<>(2);
 	
-	public DataManager(@NotNull String... domainPaths){
-		this(convert(domainPaths, File[]::new, f->new File(f.isEmpty()?".":f)));
-	}
+	public DataManagerMulti(){ }
 	
-	public DataManager(@NotNull File... domainPaths){
-		for(File path : domainPaths){
+	public DataManagerMulti(@NotNull String... domainPaths){
+		for(String path : domainPaths){
 			registerDomain(path);
 		}
 	}
 	
 	@NotNull
-	public DataManager registerDomain(@NotNull File path){
-		Domain domain=null;
-		for(Function<File, Domain> f : getDetectors()){
-			if((domain=f.apply(path))!=null) break;
-		}
-		if(domain==null) throw new RuntimeException("Unrecognised or missing domain: "+path);
-		
+	public DataManagerMulti registerDomain(@NotNull String path){
+		Domain domain=DomainRegistry.create(path);
 		if(domains.contains(domain)) return this;
 		domains.add(domain);
 		return this;
@@ -144,7 +113,7 @@ public class DataManager implements IDataManager{
 		
 		for(Domain domain : domains){
 			try{
-				String t=domain.getAll(localPath);
+				String t=domain.readAll(localPath);
 				if(t!=null) return t;
 			}catch(Exception e){}
 		}
@@ -167,7 +136,7 @@ public class DataManager implements IDataManager{
 	
 	@NotNull
 	@Override
-	public DataManager getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
+	public DataManagerMulti getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
 		checkInitialization();
 		
 		for(Domain domain : domains){
@@ -180,7 +149,7 @@ public class DataManager implements IDataManager{
 	
 	@NotNull
 	@Override
-	public DataManager getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
+	public DataManagerMulti getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
 		checkInitialization();
 		
 		for(Domain domain : domains){
@@ -293,19 +262,19 @@ public class DataManager implements IDataManager{
 				return d.makeFile(localPath);
 			}
 		}
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 	@Override
-	public boolean mkdirs(@NotNull String localPath){
+	public void makeFile(@NotNull String localPath, byte[] data){
 		checkInitialization();
 		for(Domain d : domains){
 			if(d.canEditCreate(localPath)){
-				d.mkdirs(localPath);
-				return true;
+				d.makeFile(localPath, data);
+				return;
 			}
 		}
-		return false;
+		throw new UnsupportedOperationException();
 	}
 	
 	@Nullable

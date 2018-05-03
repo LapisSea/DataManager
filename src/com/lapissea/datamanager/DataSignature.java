@@ -3,16 +3,19 @@ package com.lapissea.datamanager;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 
+import java.io.BufferedOutputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 //TODO: implement all IDataManager functions
 public class DataSignature{
 	
+	@NotNull
 	private final String       path;
+	@NotNull
 	private final IDataManager source;
 	
-	public DataSignature(String path, IDataManager source){
+	public DataSignature(@NotNull String path, @NotNull IDataManager source){
 		this.path=path;
 		this.source=source;
 	}
@@ -68,10 +71,23 @@ public class DataSignature{
 		return path;
 	}
 	
+	public boolean newerThan(@NotNull DataSignature other){
+		return !olderThan(other);
+	}
+	
 	public boolean olderThan(@NotNull DataSignature other){
 		long thisTim=getLastChange(), otherTim=getLastChange();
 		if(thisTim==-1) throw new RuntimeException("Missing resource: "+this);
 		if(otherTim==-1) throw new RuntimeException("Missing resource: "+other);
 		return thisTim<otherTim;
+	}
+	
+	@NotNull
+	public BufferedOutputStream makeFile(){
+		return source.makeFile(path);
+	}
+	
+	public void makeFile(byte[] data){
+		source.makeFile(path, data);
 	}
 }

@@ -1,9 +1,10 @@
 package com.lapissea.datamanager;
 
-import com.lapissea.datamanager.managers.DataManager;
+import com.lapissea.datamanager.managers.DataManagerMulti;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 import com.lapissea.util.UtilL;
+import com.lapissea.util.function.UnsafeFunction;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -40,11 +41,11 @@ public interface IDataManager{
 	/**
 	 * A manager for the directory where it was ran
 	 */
-	IDataManager APP_RUN_DIR=new DataManager(".");
+	IDataManager APP_RUN_DIR=new DataManagerMulti(".");
 	/**
 	 * A manager for appdata
 	 */
-	IDataManager APPDATA_DIR=new DataManager(UtilL.getAppData());
+	IDataManager APPDATA_DIR=new DataManagerMulti(UtilL.getAppData());
 	
 	/**
 	 * <p>Function used to get a raw {@link InputStream} of some resource provided by registered {@link Domain}.</p>
@@ -71,11 +72,11 @@ public interface IDataManager{
 	 * @see #getInStream(String)
 	 */
 	@NotNull
-	default <Out> CompletableFuture<Out> readBytesAsync(@NotNull String localPath, @NotNull Function<BufferedInputStream, Out> onRead){
+	default <Out> CompletableFuture<Out> readBytesAsync(@NotNull String localPath, @NotNull UnsafeFunction<BufferedInputStream, Out, Exception> onRead){
 		return async(()->{
 			try(BufferedInputStream s=getInStream(localPath)){
 				return onRead.apply(Objects.requireNonNull(s));
-			}catch(IOException e){
+			}catch(Exception e){
 				throw uncheckedThrow(e);
 			}
 		});
@@ -415,6 +416,14 @@ public interface IDataManager{
 	boolean canEditCreate(@NotNull String localPath);
 	
 	/**
+	 * <p>Function used to create/modify a resource. If a resource is missing, it will be automatically created. When resource is created its contents will be set to {@code data} </p>
+	 *
+	 * @param localPath see {@link IDataManager} -> Concepts -> local path
+	 * @param data      content that will be written to resource
+	 */
+	void makeFile(@NotNull String localPath, byte[] data);
+	
+	/**
 	 * <p>Function used to create/modify a resource. If a resource is missing, it will be automatically created.</p>
 	 *
 	 * @param localPath see {@link IDataManager} -> Concepts -> local path
@@ -422,14 +431,6 @@ public interface IDataManager{
 	 */
 	@NotNull
 	BufferedOutputStream makeFile(@NotNull String localPath);
-	
-	/**
-	 * <p>Function used to create a folder(s).</p>
-	 *
-	 * @param localPath see {@link IDataManager} -> Concepts -> local path
-	 * @return Flag that represents if creation was successful
-	 */
-	boolean mkdirs(@NotNull String localPath);
 	
 	/**
 	 * <p>Function used to create a {@link DataSignature}.</p>
