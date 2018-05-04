@@ -76,7 +76,7 @@ public class DatabaseDomain extends Domain{
 		UnsafeConsumer<Connection, Exception> setup=c->{
 			StringBuilder sb=new StringBuilder();
 			
-			Reader r=new InputStreamReader(DatabaseDomain.class.getResourceAsStream("/datamanager/db/ServerSetup.sql"));
+			Reader r=new InputStreamReader(DatabaseDomain.class.getResourceAsStream("ServerSetup.sql"));
 			int    i;
 			while((i=r.read())!=-1){
 				sb.append((char)i);
