@@ -5,13 +5,17 @@
 	<groupId>com.github.lapissea</groupId>
 	<artifactId>jlapisdata</artifactId>
 
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 
 	<build>
 		<defaultGoal>install</defaultGoal>
-		<sourceDirectory>
-			src\
-		</sourceDirectory>
+		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>res</directory>
+			</resource>
+		</resources>
+
 		<plugins>
 
 			<plugin>
