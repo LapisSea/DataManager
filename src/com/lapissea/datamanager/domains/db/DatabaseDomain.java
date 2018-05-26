@@ -1,6 +1,8 @@
 package com.lapissea.datamanager.domains.db;
 
 import com.lapissea.datamanager.Domain;
+import com.lapissea.datamanager.IDataManager;
+import com.lapissea.datamanager.MemoryChannel;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 import com.lapissea.util.function.UnsafeConsumer;
@@ -10,6 +12,7 @@ import org.h2.jdbcx.JdbcDataSource;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,6 +25,7 @@ import static com.lapissea.util.UtilL.*;
 
 public class DatabaseDomain extends Domain{
 	
+	public static final String[] EMPTY_STR_ARR=new String[0];
 	private final JdbcConnectionPool sqlConnectionPool;
 	private final String             path;
 	
@@ -181,7 +185,7 @@ public class DatabaseDomain extends Domain{
 			try(ResultSet rs=st.executeQuery()){
 				List<String> data=new ArrayList<>();
 				while(rs.next()) data.add(rs.getString(1));
-				return data.toArray(new String[data.size()]);
+				return data.toArray(EMPTY_STR_ARR);
 			}
 		}catch(SQLException e){
 			e.printStackTrace();
@@ -206,7 +210,7 @@ public class DatabaseDomain extends Domain{
 			rs=st.executeQuery();
 			while(rs.next()) data.add(rs.getString(1));
 			
-			return data.toArray(new String[data.size()]);
+			return data.toArray(EMPTY_STR_ARR);
 		}catch(SQLException e){
 			e.printStackTrace();
 			return null;
@@ -247,6 +251,13 @@ public class DatabaseDomain extends Domain{
 		}
 	}
 	
+	
+	@Override
+	public FileChannel getRandomAccess(String localPath, IDataManager.Mode mode){
+		byte[] b=getBytes(localPath);
+		return b==null?null:new MemoryChannel(b, mode);
+	}
+	
 	@Override
 	public boolean canEditCreate(@NotNull String localPath){
 		return true;
@@ -259,7 +270,7 @@ public class DatabaseDomain extends Domain{
 		    PreparedStatement st=con.prepareStatement("call makeFile(?,?,?)")){
 			st.setString(1, localPath);
 			st.setBinaryStream(2, new ByteArrayInputStream(data), data.length);
-			st.setObject(3, data.length);
+			st.setInt(3, data.length);
 			st.execute();
 		}catch(SQLException e){
 			e.printStackTrace();

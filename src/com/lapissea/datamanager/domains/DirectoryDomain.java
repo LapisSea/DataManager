@@ -1,9 +1,11 @@
 package com.lapissea.datamanager.domains;
 
 import com.lapissea.datamanager.Domain;
+import com.lapissea.datamanager.IDataManager;
 import com.lapissea.util.NotNull;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,7 +43,7 @@ public class DirectoryDomain extends Domain{
 	@Override
 	public boolean equals(Object obj){
 		if(obj==this) return true;
-		if(!(obj instanceof DirectoryDomain)) return true;
+		if(!(obj instanceof DirectoryDomain)) return false;
 		DirectoryDomain other=(DirectoryDomain)obj;
 		
 		return this.source.equals(other.source);
@@ -163,6 +165,16 @@ public class DirectoryDomain extends Domain{
 			return Math.max(attr.lastModifiedTime().toMillis(), attr.creationTime().toMillis());
 		}catch(IOException e){
 			return -1;
+		}
+	}
+	
+	
+	@Override
+	public FileChannel getRandomAccess(String localPath, IDataManager.Mode mode){
+		try{
+			return new RandomAccessFile(local(localPath), mode.handle).getChannel();
+		}catch(FileNotFoundException e){
+			return null;
 		}
 	}
 }

@@ -10,6 +10,7 @@ import com.lapissea.util.Nullable;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
@@ -22,6 +23,12 @@ public class DataManagerSingle implements IDataManager{
 	
 	public DataManagerSingle(@NotNull String domainPath){
 		domain=DomainRegistry.create(domainPath);
+	}
+	
+	@Nullable
+	@Override
+	public FileChannel getRandomAccess(@NotNull String localPath, @NotNull Mode mode){
+		return domain.getRandomAccess(localPath, mode);
 	}
 	
 	@Nullable
@@ -102,24 +109,24 @@ public class DataManagerSingle implements IDataManager{
 		return null;
 	}
 	
-	@NotNull
 	@Override
-	public DataManagerSingle getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
 		
 		try{
-			if(domain.getLines(localPath, lineConsumer)) return this;
+			if(domain.getLines(localPath, lineConsumer)) return true;
 		}catch(Exception e){}
-		return this;
+		
+		return false;
 	}
 	
-	@NotNull
 	@Override
-	public DataManagerSingle getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
 		
 		try{
-			if(domain.getLines(localPath, lineConsumer)) return this;
+			if(domain.getLines(localPath, lineConsumer)) return true;
 		}catch(Exception e){}
-		return this;
+		
+		return false;
 	}
 	
 	@Nullable
@@ -188,10 +195,7 @@ public class DataManagerSingle implements IDataManager{
 	
 	@Override
 	public boolean canEditCreate(@NotNull String localPath){
-		if(domain.canEditCreate(localPath)){
-			return true;
-		}
-		return false;
+		return domain.canEditCreate(localPath);
 	}
 	
 	@NotNull
@@ -204,7 +208,7 @@ public class DataManagerSingle implements IDataManager{
 	}
 	
 	@Override
-	public void makeFile(@NotNull String localPath, byte[] data){
+	public void makeFile(@NotNull String localPath, @NotNull byte[] data){
 		if(domain.canEditCreate(localPath)){
 			domain.makeFile(localPath, data);
 			return;
@@ -230,6 +234,12 @@ public class DataManagerSingle implements IDataManager{
 			throw new IllegalStateException(localPath+" does not exist in : "+domain.getSignature());
 		}
 		return new SubDataManager(this, localPath);
+	}
+	
+	@NotNull
+	@Override
+	public IDataManager subData(@NotNull String... localPaths){
+		return new SubDataManagerOrderedFallback(this, localPaths);
 	}
 	
 	@NotNull

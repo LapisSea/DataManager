@@ -1,5 +1,6 @@
 package com.lapissea.datamanager;
 
+import com.lapissea.datamanager.IDataManager.Mode;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 
@@ -7,6 +8,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -138,4 +140,6 @@ public abstract class Domain{
 	}
 	
 	public abstract long getLastChange(@NotNull String localPath);
+	
+	public abstract FileChannel getRandomAccess(String localPath, Mode mode);
 }

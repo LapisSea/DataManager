@@ -8,6 +8,7 @@ import com.lapissea.util.function.UnsafeFunction;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +18,7 @@ import java.util.function.IntFunction;
 import java.util.function.ObjIntConsumer;
 import java.util.stream.Stream;
 
+import static com.lapissea.util.PoolOwnThread.*;
 import static com.lapissea.util.UtilL.*;
 
 /**
@@ -38,6 +40,22 @@ import static com.lapissea.util.UtilL.*;
  * </p>
  */
 public interface IDataManager{
+	
+	enum Mode{
+		READ_ONLY("r", false),
+		READ_WRITE("rw", true),
+		READ_WRITE_SYNC("rws", true),
+		READ_WRITE_ASYNC("rwd", true);
+		
+		public final String  handle;
+		public final boolean canWrite;
+		
+		Mode(String handle, boolean canWrite){
+			this.handle=handle;
+			this.canWrite=canWrite;
+		}
+	}
+	
 	/**
 	 * A manager for the directory where it was ran
 	 */
@@ -46,6 +64,15 @@ public interface IDataManager{
 	 * A manager for appdata
 	 */
 	IDataManager APPDATA_DIR=new DataManagerMulti(UtilL.getAppData());
+	
+	/**
+	 * <p>Function used to get {@link RandomAccessFile} of resource.</p>
+	 *
+	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
+	 * @return {@link RandomAccessFile} that points to file.<br>
+	 */
+	@Nullable
+	FileChannel getRandomAccess(@NotNull String localPath, @NotNull Mode mode);
 	
 	/**
 	 * <p>Function used to get a raw {@link InputStream} of some resource provided by registered {@link Domain}.</p>
@@ -212,8 +239,7 @@ public interface IDataManager{
 	 * @param lineConsumer {@link Consumer} that will be given individual line by line of a resource provided by registered {@link Domain}.
 	 * @return this object (for chaining)
 	 */
-	@NotNull
-	IDataManager getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer);
+	boolean getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer);
 	
 	/**
 	 * <p>Function used to get all lines of a text with its index (line number) based resource provided in a callback fashion by registered {@link Domain}.</p>
@@ -222,8 +248,7 @@ public interface IDataManager{
 	 * @param lineConsumer {@link Consumer} that will be given individual line by line of a resource provided by registered {@link Domain}.
 	 * @return this object (for chaining)
 	 */
-	@NotNull
-	IDataManager getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer);
+	boolean getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer);
 	
 	/**
 	 * <p>Function used to get all names of files/directories in a directory defined by {@code localPath}.</p>
@@ -275,6 +300,15 @@ public interface IDataManager{
 	 */
 	@NotNull
 	IDataManager subData(@NotNull String localPath);
+	
+	/**
+	 * <p>Same as {@link IDataManager#subData} except the underlying manager will choose one of the paths that have a valid result.</p>
+	 *
+	 * @param localPaths The string array that will limit the view (aka: localize local paths called from created manager)
+	 * @return A new instance of {@link com.lapissea.datamanager.managers.SubDataManager SubDataManager} with calling object as the parent
+	 */
+	@NotNull
+	IDataManager subData(@NotNull String... localPaths);
 	
 	/**
 	 * <p>Function used to get size of a readable resource in bytes. If it is not readable (directory/missing) then this will return -1.</p>
@@ -421,7 +455,7 @@ public interface IDataManager{
 	 * @param localPath see {@link IDataManager} -&gt; Concepts -&gt; local path
 	 * @param data      content that will be written to resource
 	 */
-	void makeFile(@NotNull String localPath, byte[] data);
+	void makeFile(@NotNull String localPath, @NotNull byte[] data);
 	
 	/**
 	 * <p>Function used to create/modify a resource. If a resource is missing, it will be automatically created.</p>

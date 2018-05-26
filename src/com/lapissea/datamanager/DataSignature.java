@@ -3,6 +3,7 @@ package com.lapissea.datamanager;
 import com.lapissea.util.NotNull;
 import com.lapissea.util.Nullable;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -11,9 +12,9 @@ import java.util.function.Function;
 public class DataSignature{
 	
 	@NotNull
-	private final String       path;
+	public final String       path;
 	@NotNull
-	private final IDataManager source;
+	public final IDataManager source;
 	
 	public DataSignature(@NotNull String path, @NotNull IDataManager source){
 		this.path=path;
@@ -67,16 +68,20 @@ public class DataSignature{
 		       '}';
 	}
 	
+	@NotNull
 	public String getPath(){
 		return path;
 	}
 	
 	public boolean newerThan(@NotNull DataSignature other){
-		return !olderThan(other);
+		long thisTim=getLastChange(), otherTim=other.getLastChange();
+		if(thisTim==-1) throw new RuntimeException("Missing resource: "+this);
+		if(otherTim==-1) throw new RuntimeException("Missing resource: "+other);
+		return thisTim>otherTim;
 	}
 	
 	public boolean olderThan(@NotNull DataSignature other){
-		long thisTim=getLastChange(), otherTim=getLastChange();
+		long thisTim=getLastChange(), otherTim=other.getLastChange();
 		if(thisTim==-1) throw new RuntimeException("Missing resource: "+this);
 		if(otherTim==-1) throw new RuntimeException("Missing resource: "+other);
 		return thisTim<otherTim;
@@ -87,7 +92,16 @@ public class DataSignature{
 		return source.makeFile(path);
 	}
 	
-	public void makeFile(byte[] data){
+	public void makeFile(@NotNull byte[] data){
 		source.makeFile(path, data);
+	}
+	
+	public long getSize(){
+		return source.getSize(path);
+	}
+	
+	@Nullable
+	public BufferedInputStream getInStream(){
+		return source.getInStream(path);
 	}
 }

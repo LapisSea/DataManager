@@ -1,14 +1,14 @@
 package com.lapissea.datamanager.domains;
 
 import com.lapissea.datamanager.Domain;
+import com.lapissea.datamanager.MemoryChannel;
+import com.lapissea.datamanager.IDataManager;
 import com.lapissea.filechange.FileChageDetector;
 import com.lapissea.filechange.FileChangeInfo;
-import com.lapissea.util.LogUtil;
-import com.lapissea.util.NotNull;
-import com.lapissea.util.Nullable;
-import com.lapissea.util.UtilL;
+import com.lapissea.util.*;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ public class ZipDomain extends Domain{
 		@NotNull
 		final File             cache;
 		final List<ZippedFile> children;
-		@Nullable
 		final FileChangeInfo   change;
 		
 		private ZippedFile(@NotNull Path path, long size, long lastModifiedTime){
@@ -123,7 +122,7 @@ public class ZipDomain extends Domain{
 	
 	public ZipDomain(@NotNull String source){
 		this.source=new File(source);
-		async(this::updateDatabase);
+		PoolOwnThread.async(this::updateDatabase);
 	}
 	
 	@NotNull
@@ -296,6 +295,12 @@ public class ZipDomain extends Domain{
 	public long getLastChange(@NotNull String localPath){
 		ZippedFile cachedFile=get(localPath, false);
 		return cachedFile==null?-1:cachedFile.change.getChangeTime();
+	}
+	
+	@Override
+	public FileChannel getRandomAccess(String localPath, IDataManager.Mode mode){
+		byte[] b=getBytes(localPath);
+		return b==null?null:new MemoryChannel(b, mode);
 	}
 	
 }

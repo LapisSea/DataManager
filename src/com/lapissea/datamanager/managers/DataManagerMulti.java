@@ -10,6 +10,7 @@ import com.lapissea.util.Nullable;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -29,12 +30,37 @@ public class DataManagerMulti implements IDataManager{
 		}
 	}
 	
+	public DataManagerMulti(@NotNull Domain... domainPaths){
+		for(Domain path : domainPaths){
+			registerDomain(path);
+		}
+	}
+	
 	@NotNull
 	public DataManagerMulti registerDomain(@NotNull String path){
-		Domain domain=DomainRegistry.create(path);
+		return registerDomain(DomainRegistry.create(path));
+	}
+	
+	@NotNull
+	public DataManagerMulti registerDomain(@NotNull Domain domain){
 		if(domains.contains(domain)) return this;
 		domains.add(domain);
 		return this;
+	}
+	
+	@Nullable
+	@Override
+	public FileChannel getRandomAccess(@NotNull String localPath, @NotNull Mode mode){
+		checkInitialization();
+		
+		for(Domain domain : domains){
+			try{
+				FileChannel t=domain.getRandomAccess(localPath, mode);
+				if(t!=null) return t;
+			}catch(Exception e){}
+		}
+		
+		return null;
 	}
 	
 	@Nullable
@@ -134,30 +160,28 @@ public class DataManagerMulti implements IDataManager{
 		return null;
 	}
 	
-	@NotNull
 	@Override
-	public DataManagerMulti getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
 		checkInitialization();
 		
 		for(Domain domain : domains){
 			try{
-				if(domain.getLines(localPath, lineConsumer)) return this;
+				if(domain.getLines(localPath, lineConsumer)) return true;
 			}catch(Exception e){}
 		}
-		return this;
+		return false;
 	}
 	
-	@NotNull
 	@Override
-	public DataManagerMulti getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
+	public boolean getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
 		checkInitialization();
 		
 		for(Domain domain : domains){
 			try{
-				if(domain.getLines(localPath, lineConsumer)) return this;
+				if(domain.getLines(localPath, lineConsumer)) return true;
 			}catch(Exception e){}
 		}
-		return this;
+		return false;
 	}
 	
 	@Nullable
@@ -266,7 +290,7 @@ public class DataManagerMulti implements IDataManager{
 	}
 	
 	@Override
-	public void makeFile(@NotNull String localPath, byte[] data){
+	public void makeFile(@NotNull String localPath, @NotNull byte[] data){
 		checkInitialization();
 		for(Domain d : domains){
 			if(d.canEditCreate(localPath)){
@@ -295,15 +319,14 @@ public class DataManagerMulti implements IDataManager{
 	@Override
 	public IDataManager subData(@NotNull String localPath){
 		checkInitialization();
-		
-		if(!exists(localPath)){
-			StringBuilder sb=new StringBuilder(localPath+" does not exist in any of:\n");
-			for(Domain domain : domains){
-				sb.append("    ").append(domain.getSignature()).append('\n');
-			}
-			throw new IllegalStateException(sb.toString());
-		}
 		return new SubDataManager(this, localPath);
+	}
+	
+	@NotNull
+	@Override
+	public IDataManager subData(@NotNull String... localPaths){
+		checkInitialization();
+		return new SubDataManagerOrderedFallback(this, localPaths);
 	}
 	
 	@NotNull

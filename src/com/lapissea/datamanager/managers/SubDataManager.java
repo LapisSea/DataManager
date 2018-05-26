@@ -8,11 +8,14 @@ import com.lapissea.util.Nullable;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 import java.util.stream.Stream;
+
+import static java.io.File.*;
 
 public class SubDataManager implements IDataManager{
 	
@@ -29,6 +32,12 @@ public class SubDataManager implements IDataManager{
 	
 	private String localToParent(String localPath){
 		return addPath+localPath;
+	}
+	
+	@Nullable
+	@Override
+	public FileChannel getRandomAccess(@NotNull String localPath, @NotNull Mode mode){
+		return parent.getRandomAccess(localToParent(localPath), mode);
 	}
 	
 	@Nullable
@@ -67,18 +76,14 @@ public class SubDataManager implements IDataManager{
 		return parent.getLines(localToParent(localPath));
 	}
 	
-	@NotNull
 	@Override
-	public IDataManager getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
-		parent.getLines(localToParent(localPath), lineConsumer);
-		return this;
+	public boolean getLines(@NotNull String localPath, @NotNull Consumer<String> lineConsumer){
+		return parent.getLines(localToParent(localPath), lineConsumer);
 	}
 	
-	@NotNull
 	@Override
-	public IDataManager getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
-		parent.getLines(localToParent(localPath), lineConsumer);
-		return this;
+	public boolean getLines(@NotNull String localPath, @NotNull ObjIntConsumer<String> lineConsumer){
+		return parent.getLines(localToParent(localPath), lineConsumer);
 	}
 	
 	@Nullable
@@ -102,6 +107,16 @@ public class SubDataManager implements IDataManager{
 	@Override
 	public IDataManager subData(@NotNull String localPath){
 		return parent.subData(localToParent(localPath));
+	}
+	
+	@NotNull
+	@Override
+	public IDataManager subData(@NotNull String... localPaths){
+		String[] newPaths=new String[localPaths.length];
+		for(int i=0;i<localPaths.length;i++){
+			newPaths[i]=localToParent(localPaths[i]);
+		}
+		return parent.subData(newPaths);
 	}
 	
 	@Override
@@ -145,7 +160,7 @@ public class SubDataManager implements IDataManager{
 	}
 	
 	@Override
-	public void makeFile(@NotNull String localPath, byte[] data){
+	public void makeFile(@NotNull String localPath, @NotNull byte[] data){
 		parent.makeFile(localToParent(localPath), data);
 	}
 	
@@ -163,6 +178,6 @@ public class SubDataManager implements IDataManager{
 	@NotNull
 	@Override
 	public String toString(){
-		return addPath+parent;
+		return parent+(addPath.charAt(0)==separatorChar?"":separator)+addPath;
 	}
 }
